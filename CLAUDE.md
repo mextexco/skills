@@ -1,169 +1,30 @@
 # CLAUDE.md
 
-## 言語設定
+**必ず日本語で回答すること。**
 
-**必ず日本語で回答してください。**
-
-- すべての回答、説明、コメントは日本語で行うこと
-- 思考プロセスや選択肢提示も日本語で記述すること
-- コード内のコメントも日本語で記述すること(英語の技術用語は除く)
-
-## ユーザーのObsidian Vault
-
+## Obsidian Vault
 パス: `/Users/shu/Library/Mobile Documents/iCloud~md~obsidian/Documents/Obsidian Vault`
-
-ユーザー（市原崇 / mextexco）の個人ノートが保存されている。必要に応じてファイルを読みに行くこと。
-
-### 主なフォルダ構成
-- `Notion/アカウント・認証情報/` — サービスのログイン情報
-- `Notion/開発・APIキー/` — APIトークン・開発メモ（dify、MCP、Slack等）
-- `Notion/レシピ/` — 料理レシピ
-- `Notion/その他/` — TODO、リーディングリスト等
-- `Notion/mexicosou のノートブック/レシピ/` — レシピ多数（42件）
-- `Notion/mexicosou のノートブック/キャンプ・アウトドア/` — キャンプ場・サバイバル情報
-- `Notion/mexicosou のノートブック/登山/` — 登山ルート情報
-- `Notion/mexicosou のノートブック/アカウント・ID/` — 旧アカウント情報
-- `Clippings/` — AIツール関連のWebクリップ
-
----
+主なフォルダ: `Notion/アカウント・認証情報/`, `Notion/開発・APIキー/`, `Notion/mexicosou のノートブック/` (レシピ・キャンプ・登山), `Clippings/`
 
 ## Claude × Obsidian 連携ルール
+MCP経由でVaultを「外部脳」として読み書きし、セッションを跨いで知識を引き継ぐ。
 
-あなたは私のアシスタントです。
-ObsidianのVaultを「外部脳」として扱い、
-セッションを跨いで知識を引き継いでください。
-MCP経由でObsidianを読み書きできます。
+**セッション開始時:** `Knowledge/mistakes.md` と `Preferences/` を読み、質問に関連するVaultを検索して回答に反映する（単発の無関係質問はスキップ可）。
 
----
+**書き込み条件（その場で即時書く）:**
+- Knowledge/: バグ解決・新発見・ハマり解消
+- Decisions/: 選択肢から1つを選んだ判断
+- Projects/: プロジェクト状態の変化
+- Preferences/: ユーザーの好み・スタイルの発見
 
-### 0. 初期セットアップ（初回のみ実行）
+**フォーマット:** YAMLフロントマター必須（date/tags/project/related）。命名: Knowledge=`topic-subtopic.md`, Decisions=`YYYY-MM-DD-topic.md`
 
-ユーザーから「初期セットアップして」と言われたら、
-Vault配下に以下のフォルダ構造を作成する:
+**mistakes.md追記条件:** ①ユーザーからの明示的訂正 ②再発しうるパターン ③「する/しない」で書けるもの。形式: `YYYY-MM-DD: [NG Action] → [Correct Action] / Trigger`
 
-```
-Vaultのルート/
-├── Knowledge/         # 技術的な知見・解決したバグ・新しい発見
-│   └── mistakes.md    # AIのミス記録(空ファイルでOK)
-├── Decisions/         # 判断・選択・方針決定の記録
-├── Projects/          # 進行中のプロジェクトの状態
-└── Preferences/       # 自分の好み・作業スタイル
-```
+**報告:** 読み書きしたら必ず明示する（例:「Obsidian: Knowledge/xxx.md を読みました」）
 
-各フォルダに `.gitkeep` などの空ファイルを置いて、
-フォルダ自体は残るようにしてもよい。
+## デザインシステム
+UI作業時は `~/design.md/design.md` を参照（Warp Future Emerald V3: 背景`#061a0c`、アクセント`#00ff41`、サイバーパンクCLIスタイル）
 
-作成が終わったら、ユーザーに以下を伝える:
-
-どのフォルダを作ったか
-これから何を書き込むのか(各フォルダの役割)
-最初に書いておくと良いもの(例:「自己紹介を Preferences/profile.md に
-  書いておくと、AIがあなたのことを覚えやすくなります」)
-
-このセクションは初回セットアップ時のみ実行し、
-通常の会話では参照しなくてよい。
-
----
-
-### 1. 読み取り（セッション開始時に必ず実行）
-
-新しい会話の最初のメッセージで、以下を実行:
-
-1. 行動ルール(`Knowledge/mistakes.md`)とユーザープロファイル
-   (`Preferences/` 配下) を最初に読み込む
-2. ユーザーの質問に関連するキーワードでVaultを検索する
-3. ヒットしたノートを読む
-4. 読み取った内容を踏まえて回答する
-
-**スキップしてよい場合**:
-明らかにObsidianと無関係な単発質問(例:「今何時?」「1+1は?」)
-
----
-
-### 2. 書き込み(以下に該当したら、その場でVaultに書き込む)
-
-「後で書く」はしない。会話の流れの中で都度書き込む。
-
-Knowledge/ に書く
-バグや問題が解決した(原因と解決策をペアで)
-ライブラリ・API・ツールの新しい発見
-環境構築・設定でハマって解決した
-「次回同じ作業で知っておきたかった」と思ったこと
-
-Decisions/ に書く
-複数の選択肢から1つを選んだ判断(A vs B、なぜAか)
-設計・方針の決定
-
-Projects/ に書く
-プロジェクトの状態・バージョン・概要が変わった
-
-Preferences/ に書く
-ユーザーの好み・作業スタイルを新たに発見した
-
----
-
-### 3. 書き込みフォーマット
-
-ノートには必ず YAML フロントマターを付与:
-
-```
----
-date: YYYY-MM-DD
-tags: [relevant, tags]
-project: project-name
-related: [[Other Note]]
----
-
-タイトル
-
-本文。関連ノートには [[wiki link]] でリンクする。
-```
-
----
-
-### 4. ファイル命名規則
-
-Knowledge: `topic-subtopic.md`(例: `nextjs-auth-cookie.md`)
-Decisions: `YYYY-MM-DD-topic.md`(例: `2026-05-16-database-choice.md`)
-Preferences: `category.md`(例: `coding-style.md`)
-Projects: `project-name.md`
-
----
-
-### 5. mistakes.md への追記ルール
-
-セッション中にユーザーから訂正を受け、
-かつ以下3条件をすべて満たすときのみ `Knowledge/mistakes.md` に追記:
-
-1. ユーザーからの明示的な訂正である(自分の気づきではない)
-2. 繰り返し起こり得るパターンである(一度きりの偶発ではない)
-3. 具体的な「する/しない」で書ける
-
-形式:
-
-```
-YYYY-MM-DD: [一言で何を間違えたか]
-**NG Action**: 実際にやってしまった間違い
-**Correct Action**: 次回からの正しい対応
-**Trigger**: このルールが適用される状況
-```
-
----
-
-### 6. 報告
-
-Obsidianを読み書きしたら、何をしたか明示的にユーザーに伝える:
-
-「Obsidian: Knowledge/xxx.md を読みました」
-「Obsidian: Knowledge/xxx.md に書き込みました」
-
-サイレントで読み書きしない。透明性を保つ。
-
----
-
-### 7. 作業スタイル
-
-シンプルで読みやすいものを優先する
-不要な装飾・冗長な説明は省く
-既存のパターン・命名規則に合わせる
-デプロイや動作確認は自分で完結させ、ユーザーに頼まない
+## 作業スタイル
+シンプル優先・冗長な説明省く・既存パターンに合わせる・動作確認は自分で完結
