@@ -19,6 +19,7 @@ Examples:
 """
 
 import json
+import random
 import sys
 import uuid
 from pathlib import Path
@@ -28,6 +29,26 @@ from typing import Dict, Any
 def generate_unique_id() -> str:
     """Generate a unique ID for Excalidraw elements."""
     return str(uuid.uuid4()).replace('-', '')[:16]
+
+
+def get_next_indices(existing_elements: list, count: int) -> list:
+    """Generate sequential fractional indices after the current maximum."""
+    CHARS = 'abcdefghijklmnopqrstuvwxyz'
+
+    max_val = -1
+    for elem in existing_elements:
+        idx = elem.get('index', '')
+        if idx and len(idx) >= 2 and idx[0] in CHARS and idx[1:].isdigit():
+            val = CHARS.index(idx[0]) * 10 + int(idx[1:])
+            max_val = max(max_val, val)
+
+    result = []
+    for i in range(count):
+        n = max_val + 1 + i
+        char = CHARS[min(n // 10, 25)]
+        digit = n % 10
+        result.append(f"{char}{digit}")
+    return result
 
 
 def prepare_edit_path(diagram_path: Path, use_edit_suffix: bool) -> tuple[Path, Path | None]:
@@ -77,7 +98,7 @@ def create_arrow(
 ) -> list:
     """
     Create an arrow element.
-    
+
     Args:
         from_x: Starting X coordinate
         from_y: Starting Y coordinate
@@ -86,12 +107,12 @@ def create_arrow(
         style: Line style (solid, dashed, dotted)
         color: Arrow color
         label: Optional text label on the arrow
-    
+
     Returns:
         List of elements (arrow and optional label)
     """
     elements = []
-    
+
     # Arrow element
     arrow = {
         "id": generate_unique_id(),
@@ -114,9 +135,9 @@ def create_arrow(
         "roundness": {
             "type": 2
         },
-        "seed": 1000000000 + hash(f"{from_x}{from_y}{to_x}{to_y}") % 1000000000,
+        "seed": random.randint(0, 999_999_999),
         "version": 1,
-        "versionNonce": 2000000000 + hash(f"{from_x}{from_y}{to_x}{to_y}") % 1000000000,
+        "versionNonce": random.randint(0, 999_999_999),
         "isDeleted": False,
         "boundElements": [],
         "updated": 1738195200000,
@@ -133,18 +154,18 @@ def create_arrow(
         "lastCommittedPoint": None
     }
     elements.append(arrow)
-    
+
     # Optional label
     if label:
-        mid_x = (from_x + to_x) / 2 - (len(label) * 5)
+        mid_x = (from_x + to_x) / 2 - 50
         mid_y = (from_y + to_y) / 2 - 10
-        
+
         label_element = {
             "id": generate_unique_id(),
             "type": "text",
             "x": mid_x,
             "y": mid_y,
-            "width": len(label) * 10,
+            "width": 100,
             "height": 20,
             "angle": 0,
             "strokeColor": color,
@@ -158,9 +179,9 @@ def create_arrow(
             "frameId": None,
             "index": "a0",
             "roundness": None,
-            "seed": 1000000000 + hash(label) % 1000000000,
+            "seed": random.randint(0, 999_999_999),
             "version": 1,
-            "versionNonce": 2000000000 + hash(label) % 1000000000,
+            "versionNonce": random.randint(0, 999_999_999),
             "isDeleted": False,
             "boundElements": [],
             "updated": 1738195200000,
@@ -177,7 +198,7 @@ def create_arrow(
             "lineHeight": 1.25
         }
         elements.append(label_element)
-    
+
     return elements
 
 
@@ -193,7 +214,7 @@ def add_arrow_to_diagram(
 ) -> None:
     """
     Add an arrow to an Excalidraw diagram.
-    
+
     Args:
         diagram_path: Path to the Excalidraw diagram file
         from_x: Starting X coordinate
@@ -206,28 +227,32 @@ def add_arrow_to_diagram(
     """
     print(f"Creating arrow from ({from_x}, {from_y}) to ({to_x}, {to_y})")
     arrow_elements = create_arrow(from_x, from_y, to_x, to_y, style, color, label)
-    
+
     if label:
         print(f"  With label: '{label}'")
-    
+
     # Load diagram
     print(f"Loading diagram: {diagram_path}")
     with open(diagram_path, 'r', encoding='utf-8') as f:
         diagram = json.load(f)
-    
-    # Add arrow elements
+
     if 'elements' not in diagram:
         diagram['elements'] = []
-    
+
+    # Assign indices that come after existing elements
+    next_indices = get_next_indices(diagram['elements'], len(arrow_elements))
+    for elem, idx in zip(arrow_elements, next_indices):
+        elem['index'] = idx
+
     original_count = len(diagram['elements'])
     diagram['elements'].extend(arrow_elements)
     print(f"  Added {len(arrow_elements)} elements (total: {original_count} -> {len(diagram['elements'])})")
-    
+
     # Save diagram
     print(f"Saving diagram")
     with open(diagram_path, 'w', encoding='utf-8') as f:
         json.dump(diagram, f, indent=2, ensure_ascii=False)
-    
+
     print(f"✓ Successfully added arrow to diagram")
 
 
@@ -244,20 +269,20 @@ def main():
         print("  python add-arrow.py diagram.excalidraw 300 200 500 300")
         print("  python add-arrow.py diagram.excalidraw 300 200 500 300 --label 'HTTP'")
         sys.exit(1)
-    
+
     diagram_path = Path(sys.argv[1])
     from_x = float(sys.argv[2])
     from_y = float(sys.argv[3])
     to_x = float(sys.argv[4])
     to_y = float(sys.argv[5])
-    
+
     # Parse optional arguments
     style = "solid"
     color = "#1e1e1e"
     label = None
     # Default: use edit suffix to avoid editor overwrite issues
     use_edit_suffix = True
-    
+
     i = 6
     while i < len(sys.argv):
         if sys.argv[i] == '--style':
@@ -293,12 +318,12 @@ def main():
         else:
             print(f"Error: Unknown option: {sys.argv[i]}")
             sys.exit(1)
-    
+
     # Validate inputs
     if not diagram_path.exists():
         print(f"Error: Diagram file not found: {diagram_path}")
         sys.exit(1)
-    
+
     try:
         work_path, final_path = prepare_edit_path(diagram_path, use_edit_suffix)
         add_arrow_to_diagram(work_path, from_x, from_y, to_x, to_y, style, color, label)
