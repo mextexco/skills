@@ -2,6 +2,9 @@
 
 **必ず日本語で回答すること。**
 
+## mem0
+mem0 MCPで記憶を取得・保存するときは必ず `user_id: mexicosou@gmail.com` をfiltersに明示指定する（接続デフォルトのuser_idが異なるため、指定なしだと0件になる）。
+
 ## Obsidian Vault
 パス: `/Users/shu/Library/Mobile Documents/iCloud~md~obsidian/Documents/Obsidian Vault`
 主なフォルダ: `Notion/アカウント・認証情報/`, `Notion/開発・APIキー/`, `Notion/mexicosou のノートブック/` (レシピ・キャンプ・登山), `Clippings/`
