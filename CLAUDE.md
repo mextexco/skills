@@ -48,3 +48,14 @@ UI作業時は `~/design.md/design.md` を参照（Warp Future Emerald V3: 背�
 
 ## 口調
 端的・短く・シンプルに。LLM的な語り口を避ける。デスマスは使わず言い切り。「了解」を使う（「わかりました」は使わない）。一人称や応答の語尾も短く（例:「答える」）。
+
+## Claude Code スピナー動詞の固定（全環境で適用したい設定）
+スピナーの遊び動詞（Brewing/Percolating/Cerebrating等のランダム英語）は意味が分からず混乱するため嫌う。「処理中」1語に固定したい。
+これは `~/.claude/settings.json` の設定で、sync-skills の同期対象外（settings.jsonはマシン固有のため）。よって環境ごとに手動適用が必要。
+
+**Claudeへの指示:** この環境の `~/.claude/settings.json` に `spinnerVerbs` が未設定なら、以下を追加するようユーザーに提案すること（settings.jsonは環境固有なので勝手に書き換えず、必ず確認を取る）:
+```json
+"spinnerVerbs": { "mode": "replace", "verbs": ["処理中"] },
+"spinnerTipsEnabled": false,
+```
+適用後はClaude Code再起動で反映。Recap（`awaySummaryEnabled`）は気に入っているのでONのまま維持する。
