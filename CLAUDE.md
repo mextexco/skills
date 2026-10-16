@@ -59,3 +59,10 @@ UI作業時は `~/design.md/design.md` を参照（Warp Future Emerald V3: 背�
 "spinnerTipsEnabled": false,
 ```
 適用後はClaude Code再起動で反映。Recap（`awaySummaryEnabled`）は気に入っているのでONのまま維持する。
+
+## ローカルサーバー起動時のバナー表示（必須）
+ローカルでサーバーを起動するプログラムを作る・改修するときは、起動時に必ず以下を表示する（何のサーバーか分かりにくいため）。
+- 花文字（ASCIIアート）バナーでサービス名、緑色（ANSI 46）
+- 用途の1行説明、配信元、アクセスURL、停止方法（Ctrl+C）
+- stdoutはline buffering/flushを忘れない
+- 参考実装: `~/kani/serve.py`
