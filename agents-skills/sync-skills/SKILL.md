@@ -79,7 +79,7 @@ cp -r "$REPO_DIR/agents-skills/." ~/.agents/skills/
 # シンボリックリンクを再作成
 for skill in ~/.agents/skills/*/; do
   name=$(basename "$skill")
-  ln -sf "$skill" ~/.claude/skills/"$name"
+  ln -sfn "${skill%/}" ~/.claude/skills/"$name"
 done
 
 # CLAUDE.md をコピー（既存があれば確認してからコピー）
